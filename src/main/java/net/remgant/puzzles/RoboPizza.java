@@ -4,6 +4,10 @@ import java.awt.geom.Point2D;
 import java.util.Optional;
 import java.util.Random;
 
+/*
+   Monte Carlo simulation to calculate expected number of slices from the RoboPizza slicer
+   described at https://fivethirtyeight.com/features/what-if-robots-cut-your-pizza/
+ */
 public class RoboPizza {
 
     public static void main(String args[]) {
@@ -34,18 +38,14 @@ public class RoboPizza {
 
             // Find out how many intercepts there are between the lines
             int intercepts = 0;
-            Optional<Point2D> ip = calculateIntersectionPoint(m[0], b[0], m[1], m[1]);
-            if (ip.isPresent())
-                if (Math.sqrt(ip.get().getX() * ip.get().getX() + ip.get().getY() * ip.get().getY()) <= 1.0)
-                    intercepts++;
-            ip = calculateIntersectionPoint(m[0], b[0], m[2], m[2]);
-            if (ip.isPresent())
-                if (Math.sqrt(ip.get().getX() * ip.get().getX() + ip.get().getY() * ip.get().getY()) <= 1.0)
-                    intercepts++;
-            ip = calculateIntersectionPoint(m[1], b[1], m[2], m[2]);
-            if (ip.isPresent())
-                if (Math.sqrt(ip.get().getX() * ip.get().getX() + ip.get().getY() * ip.get().getY()) <= 1.0)
-                    intercepts++;
+            for (int j=0; j<3; j++) {
+                Optional<Point2D> ip = calculateIntersectionPoint(m[idx[j][0]], b[idx[j][0]], m[idx[j][1]], m[idx[j][1]]);
+                // If there's an intercept point (lines aren't parallel), then check if the intercept point
+                // is inside the circle.
+                if (ip.isPresent())
+                    if (Math.sqrt(ip.get().getX() * ip.get().getX() + ip.get().getY() * ip.get().getY()) <= 1.0)
+                        intercepts++;
+            }
 
             // Count how many slices result from the number of intercepts
             switch (intercepts) {
