@@ -3,6 +3,7 @@ package net.remgant.puzzles;
 import java.awt.geom.Point2D;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /*
    Monte Carlo simulation to calculate expected number of slices from the RoboPizza slicer
@@ -11,7 +12,7 @@ import java.util.Random;
 public class RoboPizza {
 
     public static void main(String args[]) {
-        System.out.println(new RoboPizza().expectedNumberOfSlices(1000));
+        System.out.println(new RoboPizza().expectedNumberOfSlices(args.length > 0 ? Integer.parseInt(args[0]) : 1000));
     }
 
     private double expectedNumberOfSlices(int trials) {
@@ -37,18 +38,17 @@ public class RoboPizza {
             }
 
             // Find out how many intercepts there are between the lines
-            int intercepts = 0;
-            for (int j=0; j<3; j++) {
-                Optional<Point2D> ip = calculateIntersectionPoint(m[idx[j][0]], b[idx[j][0]], m[idx[j][1]], m[idx[j][1]]);
-                // If there's an intercept point (lines aren't parallel), then check if the intercept point
-                // is inside the circle.
-                if (ip.isPresent())
-                    if (Math.sqrt(ip.get().getX() * ip.get().getX() + ip.get().getY() * ip.get().getY()) <= 1.0)
-                        intercepts++;
+            AtomicInteger intercepts = new AtomicInteger(0);
+            for (int j = 0; j < 3; j++) {
+                calculateIntersectionPoint(m[idx[j][0]], b[idx[j][0]], m[idx[j][1]], m[idx[j][1]]).ifPresent(ip -> {
+                    // If there's an intercept point and it's inside the circle, count it.
+                    if (Math.sqrt(ip.getX() * ip.getX() + ip.getY() * ip.getY()) <= 1.0)
+                        intercepts.incrementAndGet();
+                });
             }
 
             // Count how many slices result from the number of intercepts
-            switch (intercepts) {
+            switch (intercepts.get()) {
                 case 0:
                     slices += 4;
                     break;
