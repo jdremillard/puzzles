@@ -1,37 +1,49 @@
 package net.remgant.puzzles;
 
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 public class PickyEater {
 
     public static void main(String args[]) {
-        System.out.println(new PickyEater().compute(args.length > 0 ? Integer.parseInt(args[0]) : 250));
+        for (int i = 3; i <= 32; i++)
+            System.out.printf("%d %f%n", i, PickyEater.compute(i, 0.0025));
     }
 
-    private double compute(int slices) {
-        Line2D[] lines = new Line2D[]{
-                new Line2D.Double(-0.5, 0.5, 0.5, 0.5),
-                new Line2D.Double(0.5, 0.5, 0.5, -0.5),
-                new Line2D.Double(0.5, -0.5, -0.5, -0.5),
-                new Line2D.Double(-0.5, -0.5, -0.5, 0.5)
-        };
+    private static double compute(int sides, @SuppressWarnings("SameParameterValue") double delta) {
+        Line2D[] lines = new Line2D[sides];
+        Path2D path = new Path2D.Double();
+        path.moveTo(1.0, 0.0);
+        for (int i = 0; i < sides; i++) {
+            double angle = (double) i / (double) sides * 2.0 * Math.PI;
+            Point2D p1 = new Point2D.Double(Math.cos(angle), Math.sin(angle));
+            angle = (double) (i + 1) / (double) sides * 2.0 * Math.PI;
+            Point2D p2 = new Point2D.Double(Math.cos(angle), Math.sin(angle));
+            lines[i] = new Line2D.Double(p1, p2);
+            path.lineTo(p2.getX(), p2.getY());
+        }
         int eatable = 0;
-        for (int i = 0; i < slices; i++) {
-            for (int j = 0; j < slices; j++) {
-                double x = (double) i / (double) slices - 0.5;
-                double y = (double) j / (double) slices - 0.5;
+        int nonEatable = 0;
+        Rectangle2D bounds = path.getBounds2D();
+        for (double x = bounds.getX(); x <= bounds.getX() + bounds.getWidth(); x += delta) {
+            for (double y = bounds.getY(); y <= bounds.getY() + bounds.getHeight(); y += delta) {
                 Point2D p = new Point2D.Double(x, y);
-                double fromLine = Double.MAX_VALUE;
-                for (int k = 0; k < 4; k++) {
-                    if (lines[k].ptLineDist(p) < fromLine)
-                        fromLine = lines[k].ptLineDist(p);
+                if (path.contains(p)) {
+                    double fromLine = Double.MAX_VALUE;
+                    for (int k = 0; k < sides; k++) {
+                        if (lines[k].ptLineDist(p) < fromLine)
+                            fromLine = lines[k].ptLineDist(p);
+                    }
+                    double fromCenter = Math.sqrt(x * x + y * y);
+                    if (fromCenter < fromLine)
+                        eatable++;
+                    else
+                        nonEatable++;
                 }
-                double fromCenter = Math.sqrt(x * x + y * y);
-                if (fromCenter < fromLine)
-                    eatable++;
             }
         }
-        return (double) eatable / (double) (slices * slices);
+        return (double) eatable / (double) (eatable + nonEatable);
     }
 }
