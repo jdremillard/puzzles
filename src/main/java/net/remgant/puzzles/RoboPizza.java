@@ -33,8 +33,8 @@ public class RoboPizza {
             // Three cuts: point 0 to point 1, 0 to 2, and 1 to 2
             int idx[][] = {{0, 1}, {0, 2}, {1, 2}};
             for (int j = 0; j < 3; j++) {
-                m[j] = (p[idx[j][0]].getY() - p[idx[j][1]].getY()) / (p[idx[j][0]].getX() - p[idx[j][1]].getX());
-                b[j] = p[idx[j][0]].getY() - m[j] * p[idx[j][0]].getX();
+                m[j] = (p[2 * j].getY() - p[2 * j + 1].getY()) / (p[2 * j].getX() - p[2 * j + 1].getX());
+                b[j] = p[2 * j].getY() - m[j] * p[2 * j].getX();
             }
 
             // Find out how many intercepts there are between the lines
