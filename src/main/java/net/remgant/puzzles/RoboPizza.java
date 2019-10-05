@@ -12,10 +12,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RoboPizza {
 
     public static void main(String args[]) {
-        System.out.println(new RoboPizza().expectedNumberOfSlices(args.length > 0 ? Integer.parseInt(args[0]) : 1000));
+        int trials = (args.length > 0) ? Integer.parseInt(args[0]) : 1000;
+        boolean draw = trials <= 25;
+        System.out.println(new RoboPizza().expectedNumberOfSlices(trials, draw));
     }
 
-    private double expectedNumberOfSlices(int trials) {
+    private double expectedNumberOfSlices(int trials, boolean draw) {
         Random random = new Random();
         int slices = 0;
         for (int i = 0; i < trials; i++) {
@@ -62,6 +64,8 @@ public class RoboPizza {
                     slices += 7;
                     break;
             }
+            if (draw)
+                Pizza.draw(p, String.format("pizza-%04d.png",i));
         }
         return (double) slices / (double) trials;
     }

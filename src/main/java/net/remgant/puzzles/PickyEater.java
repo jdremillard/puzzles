@@ -4,6 +4,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.stream.IntStream;
 
 public class PickyEater {
 
@@ -13,6 +14,8 @@ public class PickyEater {
     }
 
     private static double compute(int sides, @SuppressWarnings("SameParameterValue") double delta) {
+        if (sides < 3)
+            throw new RuntimeException("Invalid size: must be 3 or greater");
         Line2D[] lines = new Line2D[sides];
         Path2D path = new Path2D.Double();
         path.moveTo(1.0, 0.0);
@@ -31,11 +34,12 @@ public class PickyEater {
             for (double y = bounds.getY(); y <= bounds.getY() + bounds.getHeight(); y += delta) {
                 Point2D p = new Point2D.Double(x, y);
                 if (path.contains(p)) {
-                    double fromLine = Double.MAX_VALUE;
-                    for (int k = 0; k < sides; k++) {
-                        if (lines[k].ptLineDist(p) < fromLine)
-                            fromLine = lines[k].ptLineDist(p);
-                    }
+                    //noinspection OptionalGetWithoutIsPresent
+                    double fromLine = IntStream.range(0,sides)
+                            .boxed()
+                            .map(i -> lines[i].ptLineDist(p))
+                            .min(Double::compareTo)
+                            .get();
                     double fromCenter = Math.sqrt(x * x + y * y);
                     if (fromCenter < fromLine)
                         eatable++;
