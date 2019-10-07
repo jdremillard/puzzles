@@ -13,17 +13,14 @@ public class Pizza {
     public static void main(String args[]) {
         Random random = new Random(1);
         for (int i = 0; i < 10; i++) {
-            Point2D[] points = random.doubles()
-                    .limit(6)
-                    .map(d -> d * 2.0 * Math.PI)
+            Point2D[] points = random.doubles(6, 0.0, 2.0*Math.PI)
                     .boxed()
                     .map(d -> new Point2D.Double(Math.sin(d), Math.cos(d)))
                     .toArray(Point2D[]::new);
             Pizza.draw(points, String.format("pizza-%04d.png", i));
         }
     }
-
-
+    
      static void draw(Point2D[] points, String fileName) {
         BufferedImage image = new BufferedImage(900, 900, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = image.createGraphics();
@@ -40,12 +37,8 @@ public class Pizza {
         graphics.draw(a);
 
         Color[] colors = new Color[]{Color.RED, Color.RED, Color.BLUE, Color.BLUE, Color.GREEN, Color.GREEN};
-//        Point2D[] points = new Point2D[6];
         double lineWidth = 0.0025;
         for (int i = 0; i < 6; i++) {
-//            double angle = random.nextDouble() * Math.PI * 2.0;
-//            Point2D p = new Point2D.Double(Math.sin(angle), Math.cos(angle));
-//            points[i] = p;
             a.reset();
             a.add(new Area(new Ellipse2D.Double(points[i].getX() / 2.0, points[i].getY() / 2.0, 0.01, 0.01)));
             a.transform(AffineTransform.getTranslateInstance(0.5, 0.5));
