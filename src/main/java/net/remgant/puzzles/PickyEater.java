@@ -1,9 +1,15 @@
 package net.remgant.puzzles;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.stream.IntStream;
 
 public class PickyEater {
@@ -30,6 +36,11 @@ public class PickyEater {
         int eatable = 0;
         int nonEatable = 0;
         Rectangle2D bounds = path.getBounds2D();
+        BufferedImage image = new BufferedImage((int)(1.0/delta)*2,(int)(1.0/delta)*2,BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = image.createGraphics();
+        Rectangle2D r = new Rectangle2D.Double(0.0, 0.0, image.getWidth(), image.getHeight());
+        graphics.setColor(Color.WHITE);
+        graphics.fill(r);
         for (double x = bounds.getX(); x <= bounds.getX() + bounds.getWidth(); x += delta) {
             for (double y = bounds.getY(); y <= bounds.getY() + bounds.getHeight(); y += delta) {
                 Point2D p = new Point2D.Double(x, y);
@@ -41,12 +52,23 @@ public class PickyEater {
                             .min(Double::compareTo)
                             .get();
                     double fromCenter = Math.sqrt(x * x + y * y);
-                    if (fromCenter < fromLine)
+                    if (fromCenter < fromLine) {
                         eatable++;
-                    else
+                        graphics.setColor(new Color(64,64,64));
+                    }
+                    else {
                         nonEatable++;
+                        graphics.setColor(new Color(192,192, 192));
+                    }
+                    r = new Rectangle2D.Double(x/delta + image.getWidth()/2.0,y/delta + image.getWidth()/2.0,1.0,1.0);
+                    graphics.fill(r);
                 }
             }
+        }
+        try {
+            ImageIO.write(image,"PNG",new File(String.format("picky-%02d.png",sides)));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
         return (double) eatable / (double) (eatable + nonEatable);
     }
